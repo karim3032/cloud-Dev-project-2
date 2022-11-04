@@ -1,8 +1,8 @@
 import express from 'express';
 import bodyParser from 'body-parser';
 import {filterImageFromURL, deleteLocalFiles} from './util/util';
-import {Router, Request, Response} from 'express'; 
-import { ppid } from 'process';
+import { Url } from 'url';
+import { url } from 'inspector';
 
 (async () => {
 
@@ -30,19 +30,23 @@ import { ppid } from 'process';
   //   the filtered image file [!!TIP res.sendFile(filteredpath); might be useful]
 
   /**************************************************************************** */
-app.get('/filterdimage', async (req: Request ,res: Response) => {
-  const image_url = req.query.image_url.toString();
-  if (!image_url) {
-  res.status(400).send('image url is required');
-  }
-
-const filterd_image = await filterImageFromURL(image_url);
-res.status(200).sendFile(filterd_image, () => {
-  deleteLocalFiles([filterd_image]);
- });
-
- });  
-
+  app.get("/filteredimage", async (req: express.Request, res: express.Response) => {
+    let { image_url } = req.query;
+    if ( !image_url ) {
+      return res.status(400).send("image_url is required");
+    }
+    filterImageFromURL(image_url)
+    .then(filteredpath => {
+      return res.status(200).sendFile(filteredpath, err => {
+        if (!err) {
+          let filesList: string[] = [filteredpath];
+          deleteLocalFiles(filesList);
+        }
+      });
+    }).catch(() => {
+      return res.status(422).send("error when processing the image");
+    });
+} );  
 
 
 
@@ -60,4 +64,4 @@ res.status(200).sendFile(filterd_image, () => {
       console.log( `server running http://localhost:${ port }` );
       console.log( `press CTRL+C to stop server` );
   } );
-})();
+})(); 
