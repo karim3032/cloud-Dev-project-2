@@ -1,5 +1,4 @@
-link for EB app 
-http://image-filter1.us-east-1.elasticbeanstalk.com/
+
 
 
 
